@@ -24,9 +24,6 @@ Commercial licensing inquiries: [COMMERCIAL-LICENSING.md](COMMERCIAL-LICENSING.m
 Contact via a repository issue with no private business details; permission
 is **not** granted by merely opening an issue.
 
-Existing independent MIT-licensed examples retain their original license.
-This separate publication does **not** attempt to revoke or relicense them.
-
 ## Features
 
 - **Episodic:** SQLite FTS5 sidecar index of original dialogue and related logs.
@@ -117,7 +114,3 @@ All tests use synthetic data. The CI workflow verifies multiple Python versions.
 This is **experimental**: the results are not evidence of production-ready
 memory accuracy, perfect identity separation or general superiority to other
 memory frameworks.
-
-A separate MIT-licensed, simplified educational experiment exists at
-[temporal-memory-lab](https://github.com/GaikichiAtaoka/temporal-memory-lab).
-It has a different codebase and license.
