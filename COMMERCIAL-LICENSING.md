@@ -16,7 +16,7 @@ is discretionary; no fee or permission is implied until explicitly agreed.
 This is a source-available, noncommercial project, not an OSI-approved
 open-source license.
 
-The already-published, separate MIT-licensed experimental demo, if used
-independently under its own license, is not retroactively relicensed here.
+Previously granted licenses for separately published code remain governed by
+the license terms of their respective releases.
 Third-party dependencies and optional pretrained models may have their own
 licenses and are not relicensed by this project.
