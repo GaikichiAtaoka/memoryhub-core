@@ -1,0 +1,4 @@
+{"role":"user","time":"2026-10-10T21:15:00+09:00","content":"明日は図書館で青い本を借りる予定です。","message_id":"synthetic_u_1010_01"}
+{"role":"assistant","time":"2026-10-10T21:15:08+09:00","content":"青い本を借りたんですね。","message_id":"synthetic_a_1010_01"}
+{"role":"user","time":"2026-10-10T21:30:00+09:00","content":"図書館の開館時間を調べておこう。","message_id":"synthetic_u_1010_02"}
+{"role":"user","time":"2026-10-10T21:41:00+09:00","content":"これは隔離テスト用の発話。","message_id":"synthetic_excluded_01","is_test":true}
