@@ -1,5 +1,17 @@
 # Fully synthetic examples
 
+The runnable [agent integration example](agent_integration.py) shows the full
+source-index-sync -> read-only search -> model-facing evidence path.
+
+~~~bash
+python -m pip install -e .
+python examples/agent_integration.py --query "青い本はもう借りましたか？"
+~~~
+
+It runs offline by default. See [the Japanese guide](../docs/INTEGRATION_JA.md)
+for your own logs and optional localhost Ollama model usage.
+
+
 All example source messages are invented for this repository.
 The example workspace is disposable; it is not compatible with or connected
 to a live deployment.

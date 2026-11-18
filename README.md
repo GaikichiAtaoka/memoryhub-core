@@ -43,6 +43,23 @@ is **not** granted by merely opening an issue.
 - **Process-local embedding cache:** reduces repeated calls for unchanged
   source sentences; it does not cache personal conversations on disk.
 
+## AIへの導入ガイド（日本語）
+
+**[MemoryHub Core を既存AIに接続する手順](docs/INTEGRATION_JA.md)** に、
+自分の会話ログの形式、インデックス更新、AIへの検索結果の渡し方をまとめました。
+
+動く最小統合サンプル: [examples/agent_integration.py](examples/agent_integration.py)
+
+~~~bash
+python -m pip install -e .
+python examples/agent_integration.py --query "青い本はもう借りましたか？"
+~~~
+
+この例は**架空の会話データ**で検索して、LLMに渡す根拠付きメッセージをオフラインで表示します。
+ローカルOllamaに接続する場合だけ `--model YOUR_INSTALLED_MODEL` を追加します。
+自分のデータを使うときは明示的に `--base YOUR_WORKSPACE` を指定してください。
+検索するかどうかの判断と、会話の保存処理は呼び出し側のエージェントが担当します。
+
 ## Run the synthetic example
 
 Python 3.11+ with SQLite FTS5:
