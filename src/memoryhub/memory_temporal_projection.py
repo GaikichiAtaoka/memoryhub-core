@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Mechanical JST temporal coordinates for *retrieved* OSL memory.
+"""Mechanical JST temporal coordinates for retrieved memory.
 
 The actor remains the agent. This module does not decide whether to search, which
 memory matters, what an event means, or how to phrase a personal reflection.
@@ -50,7 +50,7 @@ def project_memory_event_time(
 ) -> dict[str, Any]:
     """Return mechanics only; never assume missing event times or sleep times.
 
-    An event timestamp without timezone uses OSL's documented JST assumption
+    An event timestamp without timezone uses this package's documented JST assumption
     and marks that assumption. A date-only timestamp carries no clock/daypart.
     """
     ref = _reference_jst(reference_now)

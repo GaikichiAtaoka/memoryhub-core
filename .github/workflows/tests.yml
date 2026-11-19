@@ -30,3 +30,5 @@ jobs:
           python -m memoryhub --base examples/synthetic_workspace day 2026-10-10
       - name: Offline chatbot integration example
         run: python examples/agent_integration.py --query "青い本はもう借りましたか？" > /dev/null
+      - name: Offline memory lifecycle demonstration
+        run: python examples/lifecycle_demo.py

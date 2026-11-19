@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""MemoryHub v0.1: a single READ-ONLY entry to existing private stores.
+"""MemoryHub: a single READ-ONLY entry to existing private stores.
 
 This is a thin retrieval bus, NOT another actor, not a canonical memory store,
 not a new model, not a personality/values engine, and not an automatic writer.
@@ -43,8 +43,9 @@ from .memory_time_coordinates import render_record_time_coordinates
 from .memory_source_inspection import inspect_message_source
 from .memory_hub_pages import project_record_page, record_revision, page_label
 from .memory_source_observation import observe_memory_render, source_visibility_metadata
+from .memory_lifecycle import memory_lifecycle_rows
 
-HUB_VERSION = "0.3-revision-bound-pages"
+HUB_VERSION = "0.4-retained-memory-projection"
 SCOPES = frozenset({"all", "episodic", "semantic", "reflective", "procedural"})
 ACTIONS = frozenset({"search", "inspect", "chronology", "day"})
 MAX_RESULTS = 15
@@ -66,7 +67,7 @@ HUB_TOOL: dict[str, Any] = {
         "name": "memory.hub",
         "description": (
             "the agent's SINGLE read-only entry to memory. Search episodic dialogue, "
-            "current semantic canonical facts, subjective reflections, or inspect "
+            "current semantic canonical facts, retained source passages, subjective reflections, or inspect "
             "an exact source; list a specific historical day or chronology. "
             "Provides source/role/timestamp/authority and index-staleness status. "
             "Choose when past facts are needed; do NOT assume an empty search proves absence."
@@ -806,6 +807,11 @@ def execute_memory_hub(
             world, world_errors = _world_rows(base)
             errors.extend(world_errors)
             rows.extend(r for r in world if _lexical_score(query, r["title"]+" "+r["primary_text"]) > 0)
+        if scope in {"all", "episodic", "reflective"}:
+            # An absent optional lifecycle store is empty. Reads never create it.
+            retained, retained_errors = memory_lifecycle_rows(base)
+            errors.extend(retained_errors)
+            rows.extend(r for r in retained if _lexical_score(query, r["title"]+" "+r["primary_text"]) > 0)
         if scope in {"all", "episodic"}:
             experience, experience_errors = _experience_rows(base)
             errors.extend(experience_errors)
@@ -829,11 +835,15 @@ def execute_memory_hub(
         if day_state in {"INVALID_DATE", "SOURCE_UNAVAILABLE", "SOURCE_TOO_LARGE"}:
             errors.append(day_state)
     elif action == "inspect":
-        if not memory_id.startswith(("hub:c:", "hub:r:", "hub:d:", "hub:e:", "hub:w:", "mem:", "msg:")):
+        if not memory_id.startswith(("hub:c:", "hub:r:", "hub:d:", "hub:e:", "hub:w:", "hub:lm:", "mem:", "msg:")):
             return {"ok": False, "status": "INVALID_MEMORY_ID",
                     "action": action, "scope": scope, "results": [],
                     "hub_version": HUB_VERSION}
-        if memory_id.startswith("msg:"):
+        if memory_id.startswith("hub:lm:"):
+            rows, errors = memory_lifecycle_rows(base, memory_id=memory_id)
+            if errors:
+                inspect_state = "SOURCE_UNAVAILABLE"
+        elif memory_id.startswith("msg:"):
             rows, inspect_state = inspect_message_source(base, date, memory_id[4:])
             if inspect_state == "FOUND":
                 inspect_state = ""  # a later scope filter may remove this record

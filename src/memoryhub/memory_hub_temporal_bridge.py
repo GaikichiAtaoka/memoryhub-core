@@ -168,7 +168,7 @@ def _local_embedding(strings:list[str], *, model:str=EMBED_MODEL,
 
     Cache keys are model tag + SHA-256 of the original input text; changing
     even one character yields a different vector. This is an *in-process*
-    cache, so it resets when the model-serving OSL process restarts. A tag
+    cache, so it resets when the host process restarts. A tag
     upgrade in a running process requires explicit cache invalidation.
     """
     if not strings:return []

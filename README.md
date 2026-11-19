@@ -1,15 +1,59 @@
-# MemoryHub Core — local source-first memory retrieval
+# MemoryHub Core — Remember, Revisit, Refine
+
+**Give your AI a memory it can revisit—with the original sources still attached.**
+
+MemoryHub connects local AI to past conversations and provides an explicit way
+to retain, review, correct, and combine memories. Keep the original words,
+who said them, and when they were recorded alongside the AI's interpretation.
+
+**v0.2.0a1 is an experimental preview of Phase 2 memory management.**
+The established retrieval interface remains read-only. Applications opt into
+changes through a separate `memory.manage` API; a search never decides to save
+or rewrite a memory.
+
+[日本語の導入手順](docs/INTEGRATION_JA.md) · [Phase 2 guide](docs/MEMORY_LIFECYCLE_EN.md) · [フェーズ2の使い方](docs/MEMORY_LIFECYCLE_JA.md)
+
+**[Download the v0.2.0a1 preview](https://github.com/GaikichiAtaoka/memoryhub-core/releases/tag/v0.2.0a1)** — source archive, installable wheel, and checksums.
+
+## A memory can change without losing its source
+
+1. **Remember what matters.** Your model chooses a source passage worth retaining, or leaves it alone.
+2. **Keep uncertainty visible.** Hold an idea as a candidate, defer it, and keep interpretations distinct from a user's words.
+3. **Revisit and refine.** Correct a retained memory or combine related memories using their IDs, revisions, and original sources.
+4. **Stop reusing a retained memory.** Exclude it from the retained layer while clearly reporting what still exists in original logs.
+
+An application can reopen the same local workspace in a later process or chat
+session and retrieve the saved records. The host decides which results to bring
+into the conversation. MemoryHub supplies the storage, source checks, and
+operation receipts; it does not choose the model's goals or reflection topics.
+
+## Try the complete lifecycle without a model
+
+Use **Python 3.11+ with SQLite FTS5**. Download and extract the source archive,
+open a terminal in its project directory, and run:
+
+```bash
+python -m pip install -e .
+python examples/lifecycle_demo.py
+```
+
+The demo runs in an isolated temporary workspace and removes it when finished.
+It prints the actual results of **save → retrieve → defer → correct → accept →
+merge → stop reuse**, including source IDs and revisions. Every message and
+operation choice is **invented and scripted**. No model, API key, or network is
+used, and the output is not a model-quality evaluation.
+
+To inspect the files afterward, choose a **new directory**:
+
+```bash
+python examples/lifecycle_demo.py --base demo-phase2
+```
+
+An existing path is refused. Choose another new directory when rerunning.
+The source archive contains the example scripts and guides. A wheel installs
+the Python package and CLI; obtain the source archive as well to run these scripts.
 
 **Source-available / 非商用で利用可能。Commercial use requires separate written permission.**
-
-MemoryHub is a read-only retrieval layer for long-running **local AI** projects.
-It preserves source text, timestamps, source IDs and uncertainty markers while
-searching dialogue, source-backed summaries and selected canonical facts.
-
-This repository contains **adapted, real MemoryHub core modules** extracted from
-a locally developed system, independently packaged and tested with invented
-dialogue. It is **not** a complete AI companion, cloud memory service or
-plug-and-play replacement for any other memory system.
 
 ## ライセンス / License
 
@@ -24,7 +68,7 @@ Commercial licensing inquiries: [COMMERCIAL-LICENSING.md](COMMERCIAL-LICENSING.m
 Contact via a repository issue with no private business details; permission
 is **not** granted by merely opening an issue.
 
-## Features
+## Search the original evidence
 
 - **Episodic:** SQLite FTS5 sidecar index of original dialogue and related logs.
 - **Semantic:** explicitly permitted current-fact JSON stores only; policy and
@@ -43,6 +87,24 @@ is **not** granted by merely opening an issue.
 - **Process-local embedding cache:** reduces repeated calls for unchanged
   source sentences; it does not cache personal conversations on disk.
 
+## Manage retained memories explicitly
+
+| Operation | What it does |
+|---|---|
+| `remember` | Retains an exact source-backed user passage. |
+| `propose`, `defer`, `accept` | Keeps candidates and deferred records separate from active retained memories. Accepting an assistant interpretation requires a separate permission. |
+| `correct` | Updates the same memory ID using a new source passage and its expected revision. |
+| `merge` | Combines compatible user-statement records while preserving their sources. |
+| `forget` | Stops reuse of this retained record. Original conversation logs and audit history remain. |
+| `list`, `inspect` | Reads lifecycle state, IDs, and revisions without creating a database. |
+
+Active, source-valid retained records can be read through the existing Hub.
+The original conversation is still a separate source: correcting or forgetting
+a retained record does not remove the earlier utterance from dialogue search.
+
+See the [Phase 2 API and host integration guide](docs/MEMORY_LIFECYCLE_EN.md)
+for required inputs, permissions, and the meaning of each state.
+
 ## AIへの導入ガイド（日本語）
 
 **[MemoryHub Core を既存AIに接続する手順](docs/INTEGRATION_JA.md)** に、
@@ -59,6 +121,7 @@ python examples/agent_integration.py --query "青い本はもう借りました�
 ローカルOllamaに接続する場合だけ `--model YOUR_INSTALLED_MODEL` を追加します。
 自分のデータを使うときは明示的に `--base YOUR_WORKSPACE` を指定してください。
 検索するかどうかの判断と、会話の保存処理は呼び出し側のエージェントが担当します。
+保持・訂正・統合を接続する場合は、[フェーズ2ガイド](docs/MEMORY_LIFECYCLE_JA.md)へ進めます。
 
 ## Run the synthetic example
 
@@ -93,6 +156,8 @@ The optional embedding adapter contacts only
 
 ## Python API
 
+The existing retrieval API continues to work:
+
 ```python
 from pathlib import Path
 from memoryhub import rebuild_memory_index, execute_memory_hub
@@ -110,15 +175,21 @@ The LLM should treat results as **source candidates**, not unquestioned facts.
 An assistant's old reply is not automatically evidence of the user's claim.
 Plans, uncertain timestamps and disagreements must remain explicitly qualified.
 
+For management, register `MEMORY_LIFECYCLE_TOOL` with your model's tool adapter
+and call `execute_memory_management` only when the model selects an operation.
+Pass the persisted source message and turn IDs from your host application as
+`turn_context`, separately from the model's arguments. The
+[integration example](docs/MEMORY_LIFECYCLE_EN.md#connect-your-model-to-the-host)
+shows that boundary.
+
 ## What is and is not included
 
-This package includes **11 adapted core source modules** implementing the
-existing retrieval/indexing/temporal logic, with project-specific speaker
-labels neutralized and local imports converted to a standalone Python package.
+This package contains adapted retrieval, indexing, temporal, provenance, and
+memory-management modules with generic speaker labels and standalone imports.
 
-It does not include any conversation logs, real user records, personality or
+It does not include private conversation logs, real user records, personality or
 policy state, credentials, model weights, face/voice biometrics, original
-Git history, frontend UI, full OSL runtime, or model-owned decision prompt.
+Git history, frontend UI, a full assistant runtime, or a model-owned decision prompt.
 See [docs/source-boundary.md](docs/source-boundary.md).
 
 ## Verification
@@ -131,3 +202,7 @@ All tests use synthetic data. The CI workflow verifies multiple Python versions.
 This is **experimental**: the results are not evidence of production-ready
 memory accuracy, perfect identity separation or general superiority to other
 memory frameworks.
+
+The Phase 2 demo checks the mechanics of memory management. Whether a model
+chooses a useful passage, preserves the meaning of a qualification, or recalls
+the right experience in an everyday conversation needs separate evaluation.
